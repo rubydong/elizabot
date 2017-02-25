@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <link rel="stylesheet" type="text/css" href="./style.css"> 
+    <script src='https://www.google.com/recaptcha/api.js'></script>
+    
+    <body>
+    <div class="header">
+        <h1>Verify your email!</h1> <br>
+        Thank you for registering with us. We will be sending an email shortly. Please enter the code provided in your email. <br>
+        Do not close this if you wish to continue with registration!<p>
+        
+        <form method="POST" action="/compareKey">
+        <input type="text" name="key" id="key"> <p>
+        <input type="submit" value="I'm done!">
+        </form>
+    </div>
+    
+    </body>
+</html>

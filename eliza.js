@@ -4,10 +4,16 @@ var path = require("path");
 var bodyParser = require("body-parser");
 const nodemailer = require('nodemailer');
 
-
 var counter = 0;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+
+var name = "";
+var username = "";
+var email = "";
+var password = "";
+var verified = "";
+var key = "";
 
 console.log(__dirname);
 
@@ -32,15 +38,62 @@ app.get("/register", function (request, response) {
 });
 
 
-app.post("/register", function (request, response) {
+function sendEmail(email, key) {
+    let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'noreplybhrd@gmail.com',
+            pass: 'brherudong'
+        }
+    });
+
+    let mailOptions = {
+        from: '"ElizaBot" <noreplybhrd@gmail.com>', 
+        to: email, 
+        subject: 'Email confirmation for Eliza', 
+        text: '',
+        html: 'If you have recently registered an account with us for Eliza, please enter the following code: ' + key 
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            return console.log(error);
+        }
+        console.log('Message %s sent: %s', info.messageId, info.response);
+    });
+}
+
+app.post("/registerVerify", function (request, response) {
+    username = request.body.username
+    password = request.body.password
+    email = request.body.email
+    name = request.body.name
+    response.sendFile(path.join(__dirname + "/registerVerify.html"));
     
-    //console.log(request.body.username + " " + request.body.password + " " + request.body.email + " " + request.body.name);
-    response.writeHead(200, {"Content-Type": "text/html"});
-    response.write("Thanks for registering, an email will be sent shortly");
+    key = (Math.random() + 1).toString(36).substring(7);
+    
+    if (email != "") 
+        sendEmail(request.body.email, key)
+});
+
+app.post("/compareKey", function (request, response) {   
+    if (request.body.key != key){
+        response.writeHead(200, {"Content-Type": "text/html"});
+        response.write("Wrong key.");
+    }
+    else {
+        response.writeHead(200, {"Content-Type": "text/html"});
+        response.write("Registered go back to eliza <a href='/eliza'>here </a>");
+    }
+    
+    username = "";
+    password = "";
+    name = "";
+    email = "";
+    key = "";
 });
 
 
-//User submits name
 app.post("/eliza", function (request, response) {
     var date = new Date();
     response.render(path.join(__dirname + "/doctor.ejs"), {

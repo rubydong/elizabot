@@ -2,11 +2,10 @@
 <html>
     <link rel="stylesheet" type="text/css" href="./style.css"> 
     <script src='https://www.google.com/recaptcha/api.js'></script>
-    <script src="http://smtpjs.com/smtp.js">
     </script>
     
     <body>
-    <form method="POST" action="/register">
+    <form method="POST" action="/registerVerify">
     <div class="header">
         <h1>Register</h1> <br>
 
@@ -38,15 +37,5 @@
 
     </div>
     </form>
-    <script>
-        Email.send("noreplybhrd@gmail.com",
-        "iscreamforuby@gmail.com",
-        "This is a subject",
-        "this is the body",
-        "smtp.gmail.com",
-        "noreplybhrd@gmail.com",
-        "brherudong");
-        console.log("sent...")
-    </script>
     </body>
 </html>
