@@ -17,7 +17,15 @@ app.use(express.static(__dirname + '/public'));
 //User visits front page
 app.get("/eliza", function (request, response) {
     response.sendFile(path.join(__dirname + "/eliza.html"));
-    console.log("GET");
+});
+
+app.get("/login", function (request, response) {
+   response.sendFile(path.join(__dirname + "/login.html")); 
+});
+
+
+app.get("/register", function (request, response) {
+   response.sendFile(path.join(__dirname + "/register.html")); 
 });
 
 //User submits name
