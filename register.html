@@ -11,20 +11,20 @@
             <table>
                 <tr>
                     <td>Name: </td>
-                    <td> <input type="text"> </td>
+                    <td> <input type="text" id="name" value=""> </td>
                 </tr>
                 <tr>    
                     <td>Username: </td>
-                    <td> <input type="text"> </td>
+                    <td> <input type="text" id="username" value=""> </td>
                 </tr>
                 <tr>
                     <td>Password: </td>
-                    <td><input type="password">
+                    <td><input type="password" id="password" value="">
                 </tr>
                 
                 <tr>
                     <td>Email: </td>
-                    <td><input type="text"></td>
+                    <td><input type="text" id="email" value=""></td>
                 </tr>
             </table> 
             
@@ -32,11 +32,26 @@
             <p>
                  <div class="g-recaptcha" style="width: 305px; margin: 0 auto" data-sitekey="6LcH0BYUAAAAAKFMgczzotoqhSLPLER3V_t0LiT2"></div>
             <p>
-            <input type="submit" value="SIGN UP">
+            <input type="submit" value="SIGN UP" onclick="processSubmit()">
         </div>
-        
        
         
     </body>
+    <script>    
+            function processSubmit() {
+                var name = document.getElementById("name").value;
+                
+                var username = document.getElementById("username").value;
+                
+                var password = document.getElementById("password").value;
+                
+                var email = document.getElementById("email").value;
+                
+                alert(name + " " + username + " " + password + " " + email);  
+                
+            }
+          
+                
+        </script>
     
 </html>
