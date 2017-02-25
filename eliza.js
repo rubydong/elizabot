@@ -2,6 +2,9 @@ var express = require("express");
 var app = express();
 var path = require("path");
 var bodyParser = require("body-parser");
+const nodemailer = require('nodemailer');
+
+
 var counter = 0;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -28,6 +31,15 @@ app.get("/register", function (request, response) {
    response.sendFile(path.join(__dirname + "/register.html")); 
 });
 
+
+app.post("/register", function (request, response) {
+    
+    //console.log(request.body.username + " " + request.body.password + " " + request.body.email + " " + request.body.name);
+    response.writeHead(200, {"Content-Type": "text/html"});
+    response.write("Thanks for registering, an email will be sent shortly");
+});
+
+
 //User submits name
 app.post("/eliza", function (request, response) {
     var date = new Date();
@@ -35,7 +47,6 @@ app.post("/eliza", function (request, response) {
         name: request.body.name, 
         date: (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds(),
     });
-    console.log("POST (name)");
 });
 
 
@@ -86,12 +97,10 @@ function getReply(userDialogue) {
     }
 }
 
-//User submits dialogue
 app.post("/eliza/DOCTOR", function (request, response) {
     response.json({
         eliza: getReply(request.body.human)
     });
-    console.log("POST (dialogue)");
 });
 
 app.listen(8080);
