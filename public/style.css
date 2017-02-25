@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
+body {
+    text-align: center;
+    color: #3E3F3C;
+    background-color: #F5F5F5;
+    font-family: Open Sans; 
+}
+
+
+.header{
+    margin-top: 10%;
+    width: 50%;
+    margin-left: 25%;
+}
+
+table {
+    margin: 0 auto;
+    text-align: left;
+}
+
+td {
+    width: 100px;
+}
+
+input[type="text"], input[type="password"] {
+    width: 200px;
+}
+
+input[type="submit"] {
+    width: 200px;
+    border:1px solid #B8CCCD;
+    background-color: #B8CCCD;
+    font-family: open sans;
+    font-size: 13px;
+}
+
+h1 {
+    font-family: Open Sans;
+    font-size: 75px;
+    color: ##3E3F3C;
+}
+.user {
+    background-color: #DCC7AC;
+}
+
+#defaultPage a {
+    text-decoration: none;
+    color: #fff;
+    background-color: #B8CCCD;
+    padding: 5px;
+    display: block;
+    width: 40%;
+    margin-left: 30%;
+    margin-top: 10px;
+    
+}
+.eliza {
+    background-color: #B8CCCD;
+}
+
+.user, .eliza {
+    padding: 5px;
+    margin: 10px;
+    margin-left: 15%;
+    width: 70%;
+}
+
+#convo {
+    height: 500px;
+    overflow: auto;
+}
+
+::-webkit-scrollbar {
+     height: 4px;
+     width: 15px;
+     background: #FFFFFF;
+}
+::-webkit-scrollbar-thumb {
+     background: #B8CCCD;
+     border: 1px solid #FFFFFF;
+     border-radius:200px;
+}
+
+::-webkit-scrollbar-button:start:decrement, ::-webkit-scrollbar-button:end:increment {    
+      display: block;
+      height: 12px;
+      background: #B8CCCD;
+      border: 1px solid #FFFFFF;
+}
