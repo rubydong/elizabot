@@ -18,12 +18,11 @@
             <div class="dropdown">
                 <button class="dropbtn">Previous Conversations</button>
                 <div class="dropdown-content">
-                    <% records.forEach(function(record) {%>
+                    <% conversations.forEach(function(conversation) {%>
                         <a href="">
-                        ID: <%=record.id %>  DATE: <%=record.start_date %>
-                        
-                
-                        </a>  
+                        ID: <%=conversation.id %>  DATE: <%=conversation.start_date %>
+                        </a>
+                    <% }); %>
                 </div>
             </div>
         </div>

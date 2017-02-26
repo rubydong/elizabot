@@ -165,34 +165,33 @@ app.post("/compareKey", function (request, response) {
 });
 
 app.get("/listconv", function (request, response) {
-    db.collection("users").findOne( { "username": request.session.username }, { "conversations": 1 }, function (err, document) {
+    db.collection("users").findOne( {"username": request.session.username}, { "conversations": 1 }, function (err, document) {
         var dialogues = [];
-        var records = [];
+        var conversations = [];
         document.conversations.forEach(function (conversation) {
-            conversation.dialogues.forEach(function (dialogue) {
-                dialogues.push({
-                    "timestamp": dialogue.timestamp,
-                    "name": dialogue.name,
-                    "text": dialogue.text
+            //Append to dialogue specific to conversation
+            if (conversation.id === request.session.conversationId) {
+                conversation.dialogues.forEach(function (dialogue) {
+                    dialogues.push({
+                        "timestamp": dialogue.timestamp,
+                        "name": dialogue.name,
+                        "text": dialogue.text
+                    });
                 });
-            });
-            
-            records.push({
+            }
+            //Append to conversations in dropdown menu
+            conversations.push({
                 "id": conversation.id,
                 "start_date": conversation.start_date, 
                 "dialogues": conversation.dialogues
             });
-            
-            
-            
-           // console.log(conversation.dialogues);
         });
 
         response.render(path.join(__dirname + "/doctor.ejs"), {
             name: request.session.name, 
             date: getDateTime(DATETIME),
             dialogues: dialogues,
-            records: records
+            conversations: conversations
         });
     });
 });
