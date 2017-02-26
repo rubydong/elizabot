@@ -167,7 +167,7 @@ app.post("/compareKey", function (request, response) {
 app.get("/listconv", function (request, response) {
     db.collection("users").findOne( { "username": request.session.username }, { "conversations": 1 }, function (err, document) {
         var dialogues = [];
-        var idDates = [];
+        var records = [];
         document.conversations.forEach(function (conversation) {
             conversation.dialogues.forEach(function (dialogue) {
                 dialogues.push({
@@ -177,17 +177,22 @@ app.get("/listconv", function (request, response) {
                 });
             });
             
-            idDates.push({
+            records.push({
                 "id": conversation.id,
-                "start_date": conversation.start_date
+                "start_date": conversation.start_date, 
+                "dialogues": conversation.dialogues
             });
+            
+            
+            
+           // console.log(conversation.dialogues);
         });
 
         response.render(path.join(__dirname + "/doctor.ejs"), {
             name: request.session.name, 
             date: getDateTime(DATETIME),
-            dialogues: dialogues
-            idDates: idDates
+            dialogues: dialogues,
+            records: records
         });
     });
 });
