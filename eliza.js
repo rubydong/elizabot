@@ -55,11 +55,12 @@ app.get("/login", function (request, response) {
 
 app.post("/login", function (request, response) {
     //Set cookie
-    db.collection("users").findOne({ username: request.body.username, password: request.body.password, verified: "yes" }, { name: 1 }, function (err, document) {
-        if (!document) {
+    request.session.username = request.body.username;
+    db.collection("users").findOne({ "username": request.body.username, "password": request.body.password, "verified": "yes" }, { "name": 1 }, function (err, document) {
+        if (err) {
             //Invalid login
         }
-        request.session.name = document.name
+        request.session.name = document.name;
         response.redirect("/listconv");
     });
 });
@@ -105,6 +106,7 @@ app.post("/registerVerify", function (request, response) {
     email = request.body.email;
 
     //Set cookie
+    request.session.username = username;
     request.session.name = name;
 
     response.sendFile(path.join(__dirname + "/registerVerify.html"));
@@ -114,12 +116,29 @@ app.post("/registerVerify", function (request, response) {
     }
 
     var json = {
-        'name': name,
-        'username': username,
-        'password': password,
-        'email': email,
-        'verified': key,
-        'conversations': {}
+        "name": name,
+        "username": username,
+        "password": password,
+        "email": email,
+        "verified": key,
+        "conversations": [
+//            {
+//                "id": 1,
+//                "start_date": "2\/26\/2017",
+//                "dialogues": [
+//                    {
+//                        "timestamp": "12:54:21",
+//                        "name": "Brian He",
+//                        "text": "kk"
+//                    },
+//                    {
+//                        "timestamp": "12:54:22",
+//                        "name": "Eliza",
+//                        "text": "ok"
+//                    }
+//                ]
+//            }
+        ]
     }; 
     db.collection('users').insert(json, {w: 1}, function(err, result) {});
 });
@@ -147,10 +166,24 @@ app.post("/compareKey", function (request, response) {
 });
 
 app.get("/listconv", function (request, response) {
-    var date = new Date();
-    response.render(path.join(__dirname + "/doctor.ejs"), {
-        name: request.session.name, 
-        date: (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds()
+    var dialogues = [];
+    db.collection("users").findOne( {"username": request.session.username }, { "conversations": 1 }, function (err, document) {
+        document.conversations.forEach(function (conversation) {
+            conversation.dialogues.forEach(function (dialogue) {
+                dialogues.push({
+                    "timestamp": dialogue.timestamp,
+                    "name": dialogue.name,
+                    "text": dialogue.text
+                });
+            });
+        });
+
+        var date = new Date();
+        response.render(path.join(__dirname + "/doctor.ejs"), {
+            name: request.session.name, 
+            date: (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds(),
+            dialogues: dialogues
+        });
     });
 });
 

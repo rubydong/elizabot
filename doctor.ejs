@@ -14,7 +14,15 @@
             <label for="userDialogue">Speak with me</label>
             <input type="text" name="userDialogue" id="userDialogue">
             <input type="submit" value="Submit"> <p></p>
-            <div id="convo"></div>
-       </form>
+            <div id="convo">
+                <% dialogues.forEach(function(dialogue) { %>
+                    <% if (dialogue.name === "Eliza") { %>
+                        <div class="eliza"><%= dialogue.timestamp %>     <%= dialogue.name %>: <%= dialogue.text %></div>
+                    <% } else { %>
+                        <div class="user"><%= dialogue.timestamp %>     You: <%= dialogue.text %></div>
+                    <% } %>
+                <% }); %>
+            </div>
+        </form>
     </body>
 </html>
