@@ -13,7 +13,7 @@ app.set("view engine", "ejs");
 app.set("trust proxy", 1); //Trust first proxy
 app.use(cookieSession({
     name: "session",
-    keys: ["key1", "key2"]
+    keys: [(Math.random() + 1).toString(36).substring(7)]
 }));
 
 var counter = 0;
@@ -31,16 +31,20 @@ app.use(express.static(__dirname + '/public'));
 
 //User visits front page
 app.get("/eliza", function (request, response) {
-    response.sendFile(path.join(__dirname + "/eliza.html"));
+    if (request.session.isNew) {
+        response.sendFile(path.join(__dirname + "/eliza.html"));
+    } else {
+        response.send("WHAT");
+    }
 });
 
 app.get("/login", function (request, response) {
     response.sendFile(path.join(__dirname + "/login.html")); 
 });
 
-//app.post("/login", function (request, response) {
-//    
-//});
+app.post("/login", function (request, response) {
+    
+});
 
 app.get("/register", function (request, response) {
     response.sendFile(path.join(__dirname + "/register.html")); 
@@ -72,11 +76,12 @@ function sendEmail(email, key) {
 }
 
 app.post("/registerVerify", function (request, response) {
+    name = request.body.name;
+    request.session.name = name;
     username = request.body.username;
     request.session.username = username;
     password = request.body.password;
     email = request.body.email;
-    name = request.body.name;
     response.sendFile(path.join(__dirname + "/registerVerify.html"));
     key = (Math.random() + 1).toString(36).substring(7);
     
