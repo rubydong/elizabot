@@ -24,15 +24,9 @@ app.use(express.static(__dirname + '/public'));
 const DATE = "DATE";
 const TIME = "TIME";
 const DATETIME = "DATETIME";
-var counter = 0;
-var name = "";
-var username = "";
-var password = "";
-var email = "";
-var verified = "";
-var key = "";
-var json = "";
 var db;
+var counter = 0;
+var key = "";
 
 //Connect to database
 MongoClient.connect("mongodb://localhost:27017/eliza", function (err, database) {
@@ -43,6 +37,7 @@ MongoClient.connect("mongodb://localhost:27017/eliza", function (err, database) 
     console.log("Connected to MongoDB");
 });
 
+//Return date formatting based on type
 function getDateTime(type) {
     var dateObject = new Date();
     var date = (dateObject.getMonth() + 1) + "/" + dateObject.getDate() + "/" + dateObject.getFullYear();
@@ -83,13 +78,15 @@ app.post("/login", function (request, response) {
         //Add new conversation to database
         db.collection("users").update(
             { "username": request.session.username },
-            { $push: {
+            {
+              "$push": {
                 "conversations": {
-                    "id": request.session.conversationId,
-                    "start_date": getDateTime(DATE),
-                    "dialogues": []
+                  "id": request.session.conversationId,
+                  "start_date": getDateTime(DATE),
+                  "dialogues": []
                 }
-            } },
+              }
+            },
             function (err, result) {}
         );
         
@@ -133,37 +130,24 @@ function sendEmail(email, key) {
 }
 
 app.post("/registerVerify", function (request, response) {
-    name = request.body.name;
-    username = request.body.username;
-    password = request.body.password;
-    email = request.body.email;
-
-    //Set cookie
-    request.session.username = username;
-    request.session.conversationId = Math.round(Math.random()*10000 + 1);
-    request.session.name = name;
-
-    response.sendFile(path.join(__dirname + "/registerVerify.html"));
+    var email = request.body.email;
     key = (Math.random() + 1).toString(36).substring(7);
     if (email) {
         sendEmail(email, key);
     }
 
+    //Add new user to database
     var document = {
-        "name": name,
-        "username": username,
-        "password": password,
+        "name": request.body.name,
+        "username": request.body.username,
+        "password": request.body.password,
         "email": email,
         "verified": key,
-        "conversations": [
-            {
-                "id": request.session.conversationId,
-                "start_date": getDateTime(DATE),
-                "dialogues": []
-            }
-        ]
+        "conversations": []
     }; 
     db.collection('users').insert(document, {w: 1}, function(err, result) {});
+
+    response.sendFile(path.join(__dirname + "/registerVerify.html"));
 });
 
 app.post("/compareKey", function (request, response) {   
@@ -171,25 +155,17 @@ app.post("/compareKey", function (request, response) {
         db.collection('users').update(
             { "verified": key }, 
             { $set: { "verified": "yes" } }, 
-            function(err, result) {}
+            function (err, result) {}
         );
-        response.redirect("/listconv");
+        response.redirect("/login");
     } else {
         response.writeHead(200, {"Content-Type": "text/html"});
         response.write("Wrong key.");
     }
-
-    //Reset variables
-    name = "";
-    username = "";
-    password = "";
-    email = "";
-    verified = "";
-    key = "";
 });
 
 app.get("/listconv", function (request, response) {
-    db.collection("users").findOne( {"username": request.session.username }, { "conversations": 1 }, function (err, document) {
+    db.collection("users").findOne( { "username": request.session.username }, { "conversations": 1 }, function (err, document) {
         var dialogues = [];
         document.conversations.forEach(function (conversation) {
             conversation.dialogues.forEach(function (dialogue) {
@@ -256,9 +232,34 @@ function getReply(userDialogue) {
 }
 
 app.post("/eliza/DOCTOR", function (request, response) {
-    response.json({
-        eliza: getReply(request.body.human)
-    });
+    var userDialogue = request.body.human;
+    var reply = getReply(userDialogue)
+    
+    //Add new dialogue to database
+    db.collection("users").update(
+        {"username": request.session.username, "conversations.id": request.session.conversationId},
+        {
+          "$push": {
+            "conversations.$.dialogues": {
+              "$each": [
+                {
+                  "timestamp": getDateTime(TIME),
+                  "name": request.session.name,
+                  "text": userDialogue
+                },
+                {
+                  "timestamp": getDateTime(TIME),
+                  "name": "Eliza",
+                  "text": reply
+                }
+              ]
+            }
+          }
+        },
+        function (err, result) {
+            response.json({ eliza: reply });
+        }
+    );
 });
 
 app.listen(8080);
