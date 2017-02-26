@@ -5,24 +5,25 @@
     </head>
     
     <body>
-        
+        <form method="POST" action="/login">
         <div class="header">
             <h1>Login</h1> <br>
             
             <table>
                 <tr>    
                     <td>Username: </td>
-                    <td> <input type="text"> </td>
+                    <td> <input type="text" id="username" name="username" value=""> </td>
                 </tr>
                 <tr>
                     <td>Password: </td>
-                    <td><input type="password">
+                    <td> <input type="password" id="password" name="password" value=""> </td>
                 </tr>
 
             </table> 
             <p>
             <input type="submit" value="LOGIN">
         </div>
+        </form>
     </body>
     
 </html>

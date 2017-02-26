@@ -32,7 +32,7 @@ var json = "";
 var db;
 
 //Connect to database
-MongoClient.connect("mongodb://localhost:27017/eliza", function(err, database) {
+MongoClient.connect("mongodb://localhost:27017/eliza", function (err, database) {
     if (err) {
         return console.dir(err);
     }
@@ -40,16 +40,12 @@ MongoClient.connect("mongodb://localhost:27017/eliza", function(err, database) {
     console.log("Connected to MongoDB");
 });
 
-//User visits front page
+//User visits site
 app.get("/eliza", function (request, response) {
     if (request.session.isNew) {
         response.sendFile(path.join(__dirname + "/eliza.html"));
     } else {
-        var date = new Date();
-        response.render(path.join(__dirname + "/doctor.ejs"), {
-            name: request.session.name, 
-            date: (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds()
-        });
+        response.redirect("/listconv");
     }
 });
 
@@ -58,12 +54,19 @@ app.get("/login", function (request, response) {
 });
 
 app.post("/login", function (request, response) {
-    
+    //Set cookie
+    db.collection("users").findOne({ username: request.body.username, password: request.body.password, verified: "yes" }, { name: 1 }, function (err, document) {
+        if (!document) {
+            //Invalid login
+        }
+        request.session.name = document.name
+        response.redirect("/listconv");
+    });
 });
 
 app.get("/logout", function (request, response) {
     request.session = null;
-    response.redirect("/login");
+    response.redirect("/eliza");
 });
 
 app.get("/register", function (request, response) {
@@ -101,13 +104,11 @@ app.post("/registerVerify", function (request, response) {
     password = request.body.password;
     email = request.body.email;
 
-    response.sendFile(path.join(__dirname + "/registerVerify.html"));
-    key = (Math.random() + 1).toString(36).substring(7);
-
     //Set cookie
     request.session.name = name;
-    request.session.username = username;
-    
+
+    response.sendFile(path.join(__dirname + "/registerVerify.html"));
+    key = (Math.random() + 1).toString(36).substring(7);
     if (email) {
         sendEmail(email, key);
     }
@@ -118,21 +119,19 @@ app.post("/registerVerify", function (request, response) {
         'password': password,
         'email': email,
         'verified': key,
-        'conversations': ""
+        'conversations': {}
     }; 
     db.collection('users').insert(json, {w: 1}, function(err, result) {});
 });
 
 app.post("/compareKey", function (request, response) {   
     if (request.body.key === key || request.body.key === "abracadabra") {
-        response.writeHead(200, {"Content-Type": "text/html"});
-        response.write("Registered go back to eliza <a href='/eliza'>here </a>");
-        var tempKey = key;
         db.collection('users').update(
-            {"verified": tempKey}, 
-            {$set: {"verified": "yes"}}, 
+            { "verified": key }, 
+            { $set: { "verified": "yes" } }, 
             function(err, result) {}
         );
+        response.redirect("/listconv");
     } else {
         response.writeHead(200, {"Content-Type": "text/html"});
         response.write("Wrong key.");
@@ -147,16 +146,15 @@ app.post("/compareKey", function (request, response) {
     key = "";
 });
 
-app.post("/eliza", function (request, response) {
+app.get("/listconv", function (request, response) {
     var date = new Date();
     response.render(path.join(__dirname + "/doctor.ejs"), {
-        name: request.body.name, 
+        name: request.session.name, 
         date: (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds()
     });
 });
 
 function getReply(userDialogue) {
-    console.log("getting reply");
     var responses = [
         "How does that make you feel?",
         "Why do you think that?",
