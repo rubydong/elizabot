@@ -11,6 +11,83 @@ g-recaptcha {
 
 }
 
+#top {
+    float: right;
+}
+
+#space {
+    clear: both;
+    margin: 20px;
+    padding: 10px;
+}
+
+.dropbtn {
+    margin-right: 10px;
+    background-color: #B8CCCD;
+    color: white;
+    font-size: 13px;
+    border: none;
+    height: 32px;
+    padding:5px;
+    
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    display: inline-block;
+
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {background-color: #f1f1f1;
+color: #96A7A8; }
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+    background-color: #B8CCCD;
+}
+
+
+#logoutButton {
+
+    float: right;
+    width: 50px;
+    height: 20px;
+    border:1px solid #B8CCCD;
+    background-color: #B8CCCD;
+    font-family: open sans;
+    font-size: 13px;
+    padding: 5px;
+}
+
+#logoutButton a {
+    color: white;
+    text-decoration:  none;
+}
+
+#logoutButton a:hover, input[type="submit"]:hover {
+    color: #96A7A8;
+}
 .header{
     margin-top: 10%;
     width: 50%;
@@ -44,6 +121,11 @@ h1 {
     font-size: 75px;
     color: ##3E3F3C;
 }
+
+#defaultPage a:hover {
+    color: #96A7A8;
+}
+
 .user {
     background-color: #DCC7AC;
 }
@@ -71,7 +153,7 @@ h1 {
 }
 
 #convo {
-    height: 500px;
+    height: 400px;
     overflow: auto;
 }
 
@@ -83,7 +165,6 @@ h1 {
 ::-webkit-scrollbar-thumb {
      background: #B8CCCD;
      border: 1px solid #FFFFFF;
-     border-radius:200px;
 }
 
 ::-webkit-scrollbar-button:start:decrement, ::-webkit-scrollbar-button:end:increment {    
@@ -92,3 +173,4 @@ h1 {
       background: #B8CCCD;
       border: 1px solid #FFFFFF;
 }
+
