@@ -18,9 +18,13 @@
             <div class="dropdown">
                 <button class="dropbtn">Previous Conversations</button>
                 <div class="dropdown-content">
-                    <a href="#">Link 1</a>
-                    <a href="#">Link 2</a>
-                    <a href="#">Link 3</a>
+                    <!-->
+                    
+                    <% idDates.forEach(function(idDate) {%>
+                        <a href=""> ID: <%=idDate.id %>  DATE: <%=idDate.start_date %></a>             
+                    <% }); %>
+                    
+                    <!-->
                 </div>
             </div>
         </div>

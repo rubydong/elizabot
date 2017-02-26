@@ -167,6 +167,7 @@ app.post("/compareKey", function (request, response) {
 app.get("/listconv", function (request, response) {
     db.collection("users").findOne( { "username": request.session.username }, { "conversations": 1 }, function (err, document) {
         var dialogues = [];
+        var idDates = [];
         document.conversations.forEach(function (conversation) {
             conversation.dialogues.forEach(function (dialogue) {
                 dialogues.push({
@@ -175,12 +176,18 @@ app.get("/listconv", function (request, response) {
                     "text": dialogue.text
                 });
             });
+            
+            idDates.push({
+                "id": conversation.id,
+                "start_date": conversation.start_date
+            });
         });
 
         response.render(path.join(__dirname + "/doctor.ejs"), {
             name: request.session.name, 
             date: getDateTime(DATETIME),
             dialogues: dialogues
+            idDates: idDates
         });
     });
 });
