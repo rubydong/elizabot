@@ -21,6 +21,9 @@ console.log(__dirname);
 app.use(express.static(__dirname + '/public'));
 
 //Global variables
+const DATE = "DATE";
+const TIME = "TIME";
+const DATETIME = "DATETIME";
 var counter = 0;
 var name = "";
 var username = "";
@@ -40,6 +43,20 @@ MongoClient.connect("mongodb://localhost:27017/eliza", function (err, database) 
     console.log("Connected to MongoDB");
 });
 
+function getDateTime(type) {
+    var dateObject = new Date();
+    var date = (dateObject.getMonth() + 1) + "/" + dateObject.getDate() + "/" + dateObject.getFullYear();
+    var time = dateObject.getHours() + ":" + dateObject.getMinutes() + ":" + dateObject.getSeconds();
+    var datetime = date + " " + time;
+    if (type === DATE) {
+        return date;
+    } else if (type === TIME) {
+        return time;
+    } else if (type === DATETIME) {
+        return datetime;
+    }
+}
+
 //User visits site
 app.get("/eliza", function (request, response) {
     if (request.session.isNew) {
@@ -56,9 +73,10 @@ app.get("/login", function (request, response) {
 app.post("/login", function (request, response) {
     //Set cookie
     request.session.username = request.body.username;
-    db.collection("users").findOne({ "username": request.body.username, "password": request.body.password, "verified": "yes" }, { "name": 1 }, function (err, document) {
+    request.session.conversationId = Math.round(Math.random()*10000 + 1);
+    db.collection("users").findOne({ "username": request.body.username, "password": request.body.password, "verified": "yes" }, { "name": 1, "conversations": 1 }, function (err, document) {
         if (err) {
-            //Invalid login
+            response.redirect("/login");
         }
         request.session.name = document.name;
         response.redirect("/listconv");
@@ -107,6 +125,7 @@ app.post("/registerVerify", function (request, response) {
 
     //Set cookie
     request.session.username = username;
+    request.session.conversationId = Math.round(Math.random()*10000 + 1);
     request.session.name = name;
 
     response.sendFile(path.join(__dirname + "/registerVerify.html"));
@@ -115,32 +134,21 @@ app.post("/registerVerify", function (request, response) {
         sendEmail(email, key);
     }
 
-    var json = {
+    var document = {
         "name": name,
         "username": username,
         "password": password,
         "email": email,
         "verified": key,
         "conversations": [
-//            {
-//                "id": 1,
-//                "start_date": "2\/26\/2017",
-//                "dialogues": [
-//                    {
-//                        "timestamp": "12:54:21",
-//                        "name": "Brian He",
-//                        "text": "kk"
-//                    },
-//                    {
-//                        "timestamp": "12:54:22",
-//                        "name": "Eliza",
-//                        "text": "ok"
-//                    }
-//                ]
-//            }
+            {
+                "id": request.session.conversationId,
+                "start_date": getDateTime(DATE),
+                "dialogues": []
+            }
         ]
     }; 
-    db.collection('users').insert(json, {w: 1}, function(err, result) {});
+    db.collection('users').insert(document, {w: 1}, function(err, result) {});
 });
 
 app.post("/compareKey", function (request, response) {   
@@ -166,8 +174,8 @@ app.post("/compareKey", function (request, response) {
 });
 
 app.get("/listconv", function (request, response) {
-    var dialogues = [];
     db.collection("users").findOne( {"username": request.session.username }, { "conversations": 1 }, function (err, document) {
+        var dialogues = [];
         document.conversations.forEach(function (conversation) {
             conversation.dialogues.forEach(function (dialogue) {
                 dialogues.push({
@@ -178,10 +186,9 @@ app.get("/listconv", function (request, response) {
             });
         });
 
-        var date = new Date();
         response.render(path.join(__dirname + "/doctor.ejs"), {
             name: request.session.name, 
-            date: (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds(),
+            date: getDateTime(DATETIME),
             dialogues: dialogues
         });
     });
