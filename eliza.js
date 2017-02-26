@@ -46,6 +46,11 @@ app.post("/login", function (request, response) {
     
 });
 
+app.get("/logout", function (request, response) {
+    request.session = null;
+    response.redirect("/login");
+});
+
 app.get("/register", function (request, response) {
     response.sendFile(path.join(__dirname + "/register.html")); 
 });
