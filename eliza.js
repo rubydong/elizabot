@@ -3,8 +3,8 @@ var express = require("express");
 var app = express();
 var path = require("path");
 var bodyParser = require("body-parser");
-var nodemailer = require('nodemailer');
-var MongoClient = require('mongodb').MongoClient;
+var nodemailer = require("nodemailer");
+var MongoClient = require("mongodb").MongoClient;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -16,18 +16,29 @@ app.use(cookieSession({
     keys: [(Math.random() + 1).toString(36).substring(7)]
 }));
 
-var counter = 0;
-var name = "";
-var username = "";
-var email = "";
-var password = "";
-var verified = "";
-var key = "";
-var json = "";
-
 console.log(__dirname);
 //TEMPORARY!!!! REGULAR DOES NOT HAVE
 app.use(express.static(__dirname + '/public'));
+
+//Global variables
+var counter = 0;
+var name = "";
+var username = "";
+var password = "";
+var email = "";
+var verified = "";
+var key = "";
+var json = "";
+var db;
+
+//Connect to database
+MongoClient.connect("mongodb://localhost:27017/eliza", function(err, database) {
+    if (err) {
+        return console.dir(err);
+    }
+    db = database;
+    console.log("Connected to MongoDB");
+});
 
 //User visits front page
 app.get("/eliza", function (request, response) {
@@ -37,7 +48,7 @@ app.get("/eliza", function (request, response) {
         var date = new Date();
         response.render(path.join(__dirname + "/doctor.ejs"), {
             name: request.session.name, 
-            date: (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds(),
+            date: (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds()
         });
     }
 });
@@ -86,69 +97,61 @@ function sendEmail(email, key) {
 
 app.post("/registerVerify", function (request, response) {
     name = request.body.name;
-    request.session.name = name;
     username = request.body.username;
-    request.session.username = username;
     password = request.body.password;
     email = request.body.email;
+
     response.sendFile(path.join(__dirname + "/registerVerify.html"));
     key = (Math.random() + 1).toString(36).substring(7);
+
+    //Set cookie
+    request.session.name = name;
+    request.session.username = username;
     
-    if (email != "") {
-        sendEmail(request.body.email, key);
+    if (email) {
+        sendEmail(email, key);
     }
-    
-    MongoClient.connect("mongodb://localhost:27017/eliza", function(err, db) {
-        if(err) { return console.dir(err); }
-        var collection = db.collection('users');
-        var json = {
-            'name': name,
-            'username': username,
-            'email': email,
-            'password': password,
-            'verified': key,
-            'conversations': ""
-        }; 
-        collection.insert(json, {w:1}, function(err, result){});
-    });
+
+    var json = {
+        'name': name,
+        'username': username,
+        'password': password,
+        'email': email,
+        'verified': key,
+        'conversations': ""
+    }; 
+    db.collection('users').insert(json, {w: 1}, function(err, result) {});
 });
 
 app.post("/compareKey", function (request, response) {   
-    if (request.body.key == key || request.body.key == "abracadabra") {
+    if (request.body.key === key || request.body.key === "abracadabra") {
         response.writeHead(200, {"Content-Type": "text/html"});
         response.write("Registered go back to eliza <a href='/eliza'>here </a>");
-        var tempKey = key; 
-        MongoClient.connect("mongodb://localhost:27017/eliza", function(err, db) {     
-             if(err) { return console.dir(err); }
-             var collection = db.collection('users');
-             collection.update(
-                 {"verified": tempKey}, 
-                 {$set: {"verified": "yes"}}, 
-                 function(err, result){}
-             );
-        });
-    }
-    
-    else {
+        var tempKey = key;
+        db.collection('users').update(
+            {"verified": tempKey}, 
+            {$set: {"verified": "yes"}}, 
+            function(err, result) {}
+        );
+    } else {
         response.writeHead(200, {"Content-Type": "text/html"});
         response.write("Wrong key.");
     }
-    
-   
+
+    //Reset variables
+    name = "";
     username = "";
     password = "";
-    name = "";
     email = "";
+    verified = "";
     key = "";
-    
-    
 });
 
 app.post("/eliza", function (request, response) {
     var date = new Date();
     response.render(path.join(__dirname + "/doctor.ejs"), {
         name: request.body.name, 
-        date: (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds(),
+        date: (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds()
     });
 });
 
