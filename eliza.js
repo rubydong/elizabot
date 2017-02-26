@@ -71,13 +71,28 @@ app.get("/login", function (request, response) {
 });
 
 app.post("/login", function (request, response) {
-    //Set cookie
-    request.session.username = request.body.username;
-    request.session.conversationId = Math.round(Math.random()*10000 + 1);
-    db.collection("users").findOne({ "username": request.body.username, "password": request.body.password, "verified": "yes" }, { "name": 1, "conversations": 1 }, function (err, document) {
+    db.collection("users").findOne({ "username": request.body.username, "password": request.body.password, "verified": "yes" }, { "name": 1 }, function (err, document) {
         if (err) {
             response.redirect("/login");
         }
+        
+        //Set cookie
+        request.session.username = request.body.username;
+        request.session.conversationId = Math.round(Math.random()*10000 + 1);
+
+        //Add new conversation to database
+        db.collection("users").update(
+            { "username": request.session.username },
+            { $push: {
+                "conversations": {
+                    "id": request.session.conversationId,
+                    "start_date": getDateTime(DATE),
+                    "dialogues": []
+                }
+            } },
+            function (err, result) {}
+        );
+        
         request.session.name = document.name;
         response.redirect("/listconv");
     });
