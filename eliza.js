@@ -74,7 +74,7 @@ function sendEmail(email, key) {
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            return console.log(error);
+            return console.log("bad email");
         }
         console.log('Message %s sent: %s', info.messageId, info.response);
     });
@@ -102,7 +102,7 @@ app.post("/registerVerify", function (request, response) {
             'username': username,
             'email': email,
             'password': password,
-            'verified': false,
+            'verified': key,
             'conversations': ""
         }; 
         collection.insert(json, {w:1}, function(err, result){});
@@ -113,7 +113,16 @@ app.post("/compareKey", function (request, response) {
     if (request.body.key == key || request.body.key == "abracadabra") {
         response.writeHead(200, {"Content-Type": "text/html"});
         response.write("Registered go back to eliza <a href='/eliza'>here </a>");
-        collection.find()
+        var tempKey = key; 
+        MongoClient.connect("mongodb://localhost:27017/eliza", function(err, db) {     
+             if(err) { return console.dir(err); }
+             var collection = db.collection('users');
+             collection.update(
+                 {"verified": tempKey}, 
+                 {$set: {"verified": "yes"}}, 
+                 function(err, result){}
+             );
+        });
     }
     
     else {
