@@ -2,7 +2,8 @@ var express = require("express");
 var app = express();
 var path = require("path");
 var bodyParser = require("body-parser");
-const nodemailer = require('nodemailer');
+var nodemailer = require('nodemailer');
+var MongoClient = require('mongodb').MongoClient;
 
 var counter = 0;
 app.use(bodyParser.json());
@@ -14,6 +15,7 @@ var email = "";
 var password = "";
 var verified = "";
 var key = "";
+var json = "";
 
 console.log(__dirname);
 
@@ -73,12 +75,29 @@ app.post("/registerVerify", function (request, response) {
     
     if (email != "") 
         sendEmail(request.body.email, key)
+    
+     MongoClient.connect("mongodb://localhost:27017/eliza", function(err, db) {
+        if(err) { return console.dir(err); }
+        var collection = db.collection('users');
+        var json = {
+            'name': name,
+            'username': username,
+            'email': email,
+            'password': password,
+            'verified': false,
+            'conversations': ""
+        }; 
+        
+        collection.insert(json, {w:1}, function(err, result){});
+    });
+    
 });
 
 app.post("/compareKey", function (request, response) {   
     if (request.body.key == key || request.body.key == "abracadabra"){
         response.writeHead(200, {"Content-Type": "text/html"});
         response.write("Registered go back to eliza <a href='/eliza'>here </a>");
+        collection.find()
     }
     
     else {
@@ -86,11 +105,14 @@ app.post("/compareKey", function (request, response) {
         response.write("Wrong key.");
     }
     
+   
     username = "";
     password = "";
     name = "";
     email = "";
     key = "";
+    
+    
 });
 
 
