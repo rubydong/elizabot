@@ -1,13 +1,21 @@
+var cookieSession = require("cookie-session");
 var express = require("express");
 var app = express();
 var path = require("path");
 var bodyParser = require("body-parser");
 const nodemailer = require('nodemailer');
 
-var counter = 0;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+app.set("view engine", "ejs");
+//For cookie-session
+app.set("trust proxy", 1); //Trust first proxy
+app.use(cookieSession({
+    name: "session",
+    keys: ["key1", "key2"]
+}));
 
+var counter = 0;
 var name = "";
 var username = "";
 var email = "";
@@ -16,12 +24,8 @@ var verified = "";
 var key = "";
 
 console.log(__dirname);
-
-app.set("view engine", "ejs");
-
 //TEMPORARY!!!! REGULAR DOES NOT HAVE
 app.use(express.static(__dirname + '/public'));
-
 
 //User visits front page
 app.get("/eliza", function (request, response) {
@@ -29,14 +33,16 @@ app.get("/eliza", function (request, response) {
 });
 
 app.get("/login", function (request, response) {
-   response.sendFile(path.join(__dirname + "/login.html")); 
+    response.sendFile(path.join(__dirname + "/login.html")); 
 });
 
+//app.post("/login", function (request, response) {
+//    
+//});
 
 app.get("/register", function (request, response) {
-   response.sendFile(path.join(__dirname + "/register.html")); 
+    response.sendFile(path.join(__dirname + "/register.html")); 
 });
-
 
 function sendEmail(email, key) {
     let transporter = nodemailer.createTransport({
@@ -64,19 +70,21 @@ function sendEmail(email, key) {
 }
 
 app.post("/registerVerify", function (request, response) {
-    username = request.body.username
-    password = request.body.password
-    email = request.body.email
-    name = request.body.name
+    username = request.body.username;
+    request.session.username = username;
+    password = request.body.password;
+    email = request.body.email;
+    name = request.body.name;
     response.sendFile(path.join(__dirname + "/registerVerify.html"));
     key = (Math.random() + 1).toString(36).substring(7);
     
-    if (email != "") 
-        sendEmail(request.body.email, key)
+    if (email != "") {
+        sendEmail(request.body.email, key);
+    }
 });
 
 app.post("/compareKey", function (request, response) {   
-    if (request.body.key == key || request.body.key == "abracadabra"){
+    if (request.body.key == key || request.body.key == "abracadabra") {
         response.writeHead(200, {"Content-Type": "text/html"});
         response.write("Registered go back to eliza <a href='/eliza'>here </a>");
     }
@@ -93,7 +101,6 @@ app.post("/compareKey", function (request, response) {
     key = "";
 });
 
-
 app.post("/eliza", function (request, response) {
     var date = new Date();
     response.render(path.join(__dirname + "/doctor.ejs"), {
@@ -101,7 +108,6 @@ app.post("/eliza", function (request, response) {
         date: (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds(),
     });
 });
-
 
 function getReply(userDialogue) {
     console.log("getting reply");
@@ -157,5 +163,4 @@ app.post("/eliza/DOCTOR", function (request, response) {
 });
 
 app.listen(8080);
-
 console.log("Server started");
