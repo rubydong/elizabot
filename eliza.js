@@ -34,7 +34,11 @@ app.get("/eliza", function (request, response) {
     if (request.session.isNew) {
         response.sendFile(path.join(__dirname + "/eliza.html"));
     } else {
-        response.send("WHAT");
+        var date = new Date();
+        response.render(path.join(__dirname + "/doctor.ejs"), {
+            name: request.session.name, 
+            date: (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds(),
+        });
     }
 });
 
