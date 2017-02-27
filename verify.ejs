@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="./style.css">
+        <script src="./submissions.js"></script>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Verify your email!</h1> <br>
+            Thank you for registering with us. We will be sending an email shortly. Please enter the code provided in your email. <br>
+            Do not close this if you wish to continue with registration! <br>
+            <form method="POST" action="/verify" id="verificationForm">
+                <input type="hidden" id="email" name="email" value="<%= email %>">
+                <input type="text" id="key" name="key" value=""> <br>
+                <input type="submit" value="I'm done!">
+            </form>
+        </div>
+    </body>
+</html>

@@ -1,40 +1,37 @@
 <!DOCTYPE html>
 <html>
-    <link rel="stylesheet" type="text/css" href="./style.css"> 
-    <script src='https://www.google.com/recaptcha/api.js'></script>
-    
+    <head>
+        <link rel="stylesheet" type="text/css" href="./style.css"> 
+        <script src="https://www.google.com/recaptcha/api.js"></script>
+        <script src="./submissions.js"></script>
+    </head>
     <body>
-    <form method="POST" action="/verify">
-    <div class="header">
-        <h1>Register</h1> <br>
-
-        <table>
-            <tr>
-                <td>Name: </td>
-                <td> <input type="text" id="name" name="name" value=""> </td>
-            </tr>
-            <tr>    
-                <td>Username: </td>
-                <td> <input type="text" id="username" name="username" value=""> </td>
-            </tr>
-            <tr>
-                <td>Password: </td>
-                <td> <input type="password" id="password" name="password" value=""> </td>
-            </tr>
-
-            <tr>
-                <td>Email: </td>
-                <td><input type="text" id="email" name="email" value=""></td>
-            </tr>
-        </table> 
-
-
-        <p>
-             <div class="g-recaptcha" style="width: 305px; margin: 0 auto" data-sitekey="6LcH0BYUAAAAAKFMgczzotoqhSLPLER3V_t0LiT2"></div>
-        <p>
-        <input type="submit" value="SIGN UP">
-
-    </div>
-    </form>
+        <form method="POST" action="/adduser" id="registrationForm">
+            <div class="header">
+                <h1>Register</h1> <br>
+                <table>
+                    <tr>
+                        <td>Name: </td>
+                        <td> <input type="text" id="name" name="name" value=""> </td>
+                    </tr>
+                    <tr>    
+                        <td>Username: </td>
+                        <td> <input type="text" id="username" name="username" value=""> </td>
+                    </tr>
+                    <tr>
+                        <td>Password: </td>
+                        <td> <input type="password" id="password" name="password" value=""> </td>
+                    </tr>
+                    <tr>
+                        <td>Email: </td>
+                        <td> <input type="text" id="email" name="email" value=""> </td>
+                    </tr>
+                </table> 
+                <p>
+                    <div class="g-recaptcha" style="width: 305px; margin: 0 auto" data-sitekey="6LcH0BYUAAAAAKFMgczzotoqhSLPLER3V_t0LiT2"></div>
+                <p>
+                <input type="submit" value="SIGN UP">
+            </div>
+        </form>
     </body>
 </html>

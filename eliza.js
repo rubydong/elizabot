@@ -17,8 +17,7 @@ app.use(cookieSession({
 }));
 
 console.log(__dirname);
-//TEMPORARY!!!! REGULAR DOES NOT HAVE
-app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/public')); //TEMPORARY!!!! REGULAR DOES NOT HAVE
 
 //Global variables
 const DATE = "DATE";
@@ -26,12 +25,12 @@ const TIME = "TIME";
 const DATETIME = "DATETIME";
 var db;
 var counter = 0;
-var key = "";
+var key = ""; //For email verification
 
 //Connect to database
-MongoClient.connect("mongodb://localhost:27017/eliza", function (err, database) {
-    if (err) {
-        return console.dir(err);
+MongoClient.connect("mongodb://localhost:27017/eliza", function (error, database) {
+    if (error) {
+        return console.dir(error);
     }
     db = database;
     console.log("Connected to MongoDB");
@@ -57,50 +56,11 @@ app.get("/eliza", function (request, response) {
     if (request.session.isNew) {
         response.sendFile(path.join(__dirname + "/eliza.html"));
     } else {
-        response.redirect("/listconv");
+        response.redirect("/therapySession");
     }
 });
 
-app.get("/login", function (request, response) {
-    response.sendFile(path.join(__dirname + "/login.html")); 
-});
-
-app.post("/login", function (request, response) {
-    db.collection("users").findOne({ "username": request.body.username, "password": request.body.password, "verified": "yes" }, { "name": 1 }, function (err, document) {
-        if (err) {
-            response.redirect("/login");
-        }
-        
-        //Set cookie
-        request.session.username = request.body.username;
-        request.session.conversationId = Math.round(Math.random()*10000 + 1);
-
-        //Add new conversation to database
-        db.collection("users").update(
-            { "username": request.session.username },
-            {
-              "$push": {
-                "conversations": {
-                  "id": request.session.conversationId,
-                  "start_date": getDateTime(DATE),
-                  "dialogues": []
-                }
-              }
-            },
-            function (err, result) {}
-        );
-        
-        request.session.name = document.name;
-        response.redirect("/listconv");
-    });
-});
-
-app.get("/logout", function (request, response) {
-    request.session = null;
-    response.redirect("/eliza");
-});
-
-app.get("/adduser", function (request, response) {
+app.get("/register", function (request, response) {
     response.sendFile(path.join(__dirname + "/register.html")); 
 });
 
@@ -112,7 +72,6 @@ function sendEmail(email, key) {
             pass: 'brherudong'
         }
     });
-
     let mailOptions = {
         from: '"ElizaBot" <noreplybhrd@gmail.com>', 
         to: email, 
@@ -120,16 +79,15 @@ function sendEmail(email, key) {
         text: '',
         html: 'If you have recently registered an account with us for Eliza, please enter the following code: ' + key 
     };
-
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            return console.log("bad email");
+            return console.log('Bad email');
         }
         console.log('Message %s sent: %s', info.messageId, info.response);
     });
 }
 
-app.post("/verify", function (request, response) {
+app.post("/adduser", function (request, response) {
     var email = request.body.email;
     key = (Math.random() + 1).toString(36).substring(7);
     if (email) {
@@ -145,101 +103,107 @@ app.post("/verify", function (request, response) {
         "verified": key,
         "conversations": []
     }; 
-    db.collection('users').insert(document, {w: 1}, function(err, result) {});
+    db.collection("users").insert(document, {w: 1}, function(error, result) {});
 
-    response.sendFile(path.join(__dirname + "/registerVerify.html"));
+    response.render(path.join(__dirname + "/verify.ejs"), { email: email });
 });
 
-app.post("/compareKey", function (request, response) {   
+app.post("/verify", function (request, response) {   
+    var email = request.body.email;
     if (request.body.key === key || request.body.key === "abracadabra") {
-        db.collection('users').update(
-            { "verified": key }, 
+        db.collection("users").update(
+            { "email": email, "verified": key }, 
             { $set: { "verified": "yes" } }, 
-            function (err, result) {}
+            function (error, result) {}
         );
         response.redirect("/login");
     } else {
-        response.writeHead(200, {"Content-Type": "text/html"});
-        response.write("Wrong key.");
+        db.collection("users").remove({ "email": email }, 1);
+        response.redirect("/eliza");
     }
 });
 
+app.get("/login", function (request, response) {
+    response.sendFile(path.join(__dirname + "/login.html")); 
+});
+
+app.post("/login", function (request, response) {
+    var username = request.body.username;
+    db.collection("users").findOne({ "username": username, "password": request.body.password, "verified": "yes" }, { "name": 1 }, function (error, document) {
+        if (document) {
+            //Set cookie
+            request.session.username = username;
+            request.session.conversationId = Math.round(Math.random()*10000 + 1);
+
+            //Add new conversation to database
+            db.collection("users").update(
+                { "username": request.session.username },
+                {
+                  "$push": {
+                    "conversations": {
+                      "id": request.session.conversationId,
+                      "start_date": getDateTime(DATE),
+                      "dialogues": []
+                    }
+                  }
+                },
+                function (error, result) {}
+            );
+
+            request.session.name = document.name;
+            response.redirect("/therapySession");
+        } else {
+            response.redirect("/login");
+        }
+    });
+});
+
+app.get("/logout", function (request, response) {
+    request.session = null;
+    response.redirect("/eliza");
+});
+
 app.get("/listconv", function (request, response) {
-    db.collection("users").findOne( {"username": request.session.username}, { "conversations": 1 }, function (err, document) {
-        var dialogues = [];
-        var conversations = [];
-        document.conversations.forEach(function (conversation) {
-            //Append to dialogue specific to conversation
-            if (conversation.id === request.session.conversationId) {
-                conversation.dialogues.forEach(function (dialogue) {
-                    dialogues.push({
-                        "timestamp": dialogue.timestamp,
-                        "name": dialogue.name,
-                        "text": dialogue.text
-                    });
-                });
-            }
-            //Append to conversations in dropdown menu
-            conversations.push({
-                "id": conversation.id,
-                "start_date": conversation.start_date, 
-                "dialogues": conversation.dialogues
-            });
-        });
+    db.collection("users").findOne( {"username": request.session.username}, { "conversations": 1 }, function (error, document) {
+        response.json({ "conversations": document.conversations });
+    });
+});
 
+function getDialogues(conversations, conversationId) {
+    var dialogues = [];
+    for (var conversation of conversations) {
+        //Append to dialogue specific to conversation
+        if (conversation.id === conversationId) {
+            conversation.dialogues.forEach(function (dialogue) {
+                dialogues.push({
+                    "timestamp": dialogue.timestamp,
+                    "name": dialogue.name,
+                    "text": dialogue.text
+                });
+            });
+            break;
+        }
+    }
+    return dialogues;
+}
+
+app.post("/getconv", function(request, response) {
+    db.collection("users").findOne( {"username": request.session.username}, { "conversations": 1 }, function (error, document) {
+        response.json({ "dialogues": getDialogues(document.conversations, parseInt(request.body.id)) });
+    });
+});
+
+app.get("/therapySession", function (request, response) {
+    db.collection("users").findOne( {"username": request.session.username}, { "conversations": 1 }, function (error, document) {
         response.render(path.join(__dirname + "/doctor.ejs"), {
             name: request.session.name, 
             date: getDateTime(DATETIME),
-            dialogues: dialogues,
-            conversations: conversations,
-            show: true
+            dialogues: getDialogues(document.conversations, request.session.conversationId)
         });
     });
 });
 
-
-app.post("/getConv", function(request, response) {
-    var id = request.body.session;
-    id = id.substring(4, id.indexOf("DA")-1);
-    
-    /**/
-    db.collection("users").findOne( {"username": request.session.username}, { "conversations": 1 }, function (err, document) {
-        var dialogues = [];
-        var conversations = [];
-        document.conversations.forEach(function (conversation) {
-            //Append to dialogue specific to conversation
-            
-            if (conversation.id == id) {
-                conversation.dialogues.forEach(function (dialogue) {
-                    dialogues.push({
-                        "timestamp": dialogue.timestamp,
-                        "name": dialogue.name,
-                        "text": dialogue.text
-                    });
-                });
-            }
-            //Append to conversations in dropdown menu
-            conversations.push({
-                "id": conversation.id,
-                "start_date": conversation.start_date, 
-                "dialogues": conversation.dialogues
-            });
-        });
-
-        response.render(path.join(__dirname + "/doctor.ejs"), {
-            name: request.session.name, 
-            date: getDateTime(DATETIME),
-            dialogues: dialogues,
-            conversations: conversations,
-            show: false, 
-            id: id
-        });
-    });
-    /**/
-});
-
-
-function getReply(userDialogue) {
+function getReply(userText) {
     var responses = [
         "How does that make you feel?",
         "Why do you think that?",
@@ -274,21 +238,20 @@ function getReply(userDialogue) {
         counter++;
         return "How may I help you today?"
     } else {
-        if (userDialogue.length === 0) {
+        if (userText.length === 0) {
             return "Please talk to me.";
-        } else if (userDialogue.includes("bye")) {
+        } else if (userText.includes("bye")) {
             return "Goodbye, feel free to come whenever for your next session!";
         } else {
-            var index = Math.round(Math.random() * (responses.length-1));
-            return responses[index];
+            return responses[Math.round(Math.random() * (responses.length-1))];
         }
     }
 }
 
 app.post("/eliza/DOCTOR", function (request, response) {
-    var userDialogue = request.body.human;
-    var reply = getReply(userDialogue)
-    
+    var userText = request.body.human;
+    var reply = getReply(userText)
+    var datetime = getDateTime(TIME);
     //Add new dialogue to database
     db.collection("users").update(
         {"username": request.session.username, "conversations.id": request.session.conversationId},
@@ -297,12 +260,12 @@ app.post("/eliza/DOCTOR", function (request, response) {
             "conversations.$.dialogues": {
               "$each": [
                 {
-                  "timestamp": getDateTime(TIME),
+                  "timestamp": datetime,
                   "name": request.session.name,
-                  "text": userDialogue
+                  "text": userText
                 },
                 {
-                  "timestamp": getDateTime(TIME),
+                  "timestamp": datetime,
                   "name": "Eliza",
                   "text": reply
                 }
@@ -310,8 +273,11 @@ app.post("/eliza/DOCTOR", function (request, response) {
             }
           }
         },
-        function (err, result) {
-            response.json({ eliza: reply });
+        function (error, result) {
+            response.json({
+                "eliza": reply,
+                "timestamp": datetime
+            });
         }
     );
 });

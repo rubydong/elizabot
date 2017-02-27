@@ -24,7 +24,7 @@ a {
     padding: 10px;
 }
 
-.dropbtn {
+#dropbtn {
     margin-right: 10px;
     background-color: #B8CCCD;
     color: white;
@@ -36,20 +36,20 @@ a {
     
 }
 
-.dropdown {
+#dropdown {
     display: inline-block;
    
 }
 
 
-.dropdown-content {
+#dropdown-content {
     display: none;
     position: absolute;
     background-color: #f9f9f9;
 }
 
 
-.dropdown-content input {
+#dropdown-content .conversation {
     color: black;
     font-size: 12px;
     text-decoration: none;
@@ -57,15 +57,15 @@ a {
 }
 
 
-.dropdown-content input:hover {background-color: #f1f1f1;}
+#dropdown-content .conversation:hover {background-color: #f1f1f1;}
 
 
-.dropdown:hover .dropdown-content {
+#dropdown:hover #dropdown-content {
     display: block;
 }
 
 
-.dropdown:hover .dropbtn {
+#dropdown:hover #dropbtn {
     background-color: #B8CCCD;
 }
 
@@ -86,7 +86,7 @@ a {
     text-decoration:  none;
 }
 
-.dropdown-content a:hover, #logoutButton a:hover, input[type="submit"]:hover {
+#dropdown-content a:hover, #logoutButton a:hover, .conversation:hover {
     color: #96A7A8;
 }
 .header{
@@ -109,7 +109,7 @@ input[type="text"], input[type="password"] {
     height: 20px;
 }
 
-input[type="submit"] {
+input[type="submit"], .conversation {
     width: 200px;
     height: 25px;
     border:1px solid #B8CCCD;
