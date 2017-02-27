@@ -18,11 +18,12 @@
             <div class="dropdown">
                 <button class="dropbtn">Previous Conversations</button>
                 <div class="dropdown-content">
+                    
+                    <form method="POST" action="/getConv">
                     <% conversations.forEach(function(conversation) {%>
-                        <a href="">
-                        ID: <%=conversation.id %>  DATE: <%=conversation.start_date %>
-                        </a>
+                        <input type="submit" name="session" id="session" value = "ID: <%=conversation.id %>  DATE: <%=conversation.start_date %>">      
                     <% }); %>
+                    </form>
                 </div>
             </div>
         </div>
@@ -33,17 +34,23 @@
         
         <div id="header"><h2>Hello <%= name %>, <%= date %></h2></div>
         <form method="POST" action="/eliza/DOCTOR" id="userForm">
-            <label for="userDialogue">Speak with me</label>
-            <input type="text" name="userDialogue" id="userDialogue">
-            <input type="submit" value="Submit"> <p></p>
+            
+            <% if (show) {%>
+                <label for="userDialogue">Speak with me</label>
+                <input type="text" name="userDialogue" id="userDialogue">
+                <input type="submit" value="Submit"> <p></p>
+            <%} else {%>
+            You are viewing an old conversation of id #<%=id%> Please return <a href="/eliza">here</a> to continue your conversation. 
+            <%}%>
+             
             <div id="convo">
-                <% dialogues.forEach(function(dialogue) { %>
-                    <% if (dialogue.name === "Eliza") { %>
-                        <div class="eliza"><%= dialogue.timestamp %>     <%= dialogue.name %>: <%= dialogue.text %></div>
-                    <% } else { %>
-                        <div class="user"><%= dialogue.timestamp %>     You: <%= dialogue.text %></div>
-                    <% } %>
-                <% }); %>
+            <% dialogues.forEach(function(dialogue) { %>
+                <% if (dialogue.name === "Eliza") { %>
+                    <div class="eliza"><%= dialogue.timestamp %>     <%= dialogue.name %>: <%= dialogue.text %></div>
+                <% } else { %>
+                    <div class="user"><%= dialogue.timestamp %>     You: <%= dialogue.text %></div>
+                <% } %>
+            <% }); %>
             </div>
         </form>
     </body>

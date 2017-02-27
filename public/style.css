@@ -10,7 +10,10 @@ g-recaptcha {
     margin: 0 auto;
 
 }
-
+a {
+    text-decoration: none;
+    color: #B8CCCD;
+}
 #top {
     float: right;
 }
@@ -28,12 +31,14 @@ g-recaptcha {
     font-size: 13px;
     border: none;
     height: 32px;
+    width: 200px;
     padding:5px;
     
 }
 
 .dropdown {
     display: inline-block;
+   
 }
 
 
@@ -44,16 +49,15 @@ g-recaptcha {
 }
 
 
-.dropdown-content a {
+.dropdown-content input {
     color: black;
-    padding: 5px;
     font-size: 12px;
     text-decoration: none;
     display: block;
 }
 
 
-.dropdown-content a:hover {background-color: #f1f1f1;}
+.dropdown-content input:hover {background-color: #f1f1f1;}
 
 
 .dropdown:hover .dropdown-content {

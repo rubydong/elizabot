@@ -191,10 +191,54 @@ app.get("/listconv", function (request, response) {
             name: request.session.name, 
             date: getDateTime(DATETIME),
             dialogues: dialogues,
-            conversations: conversations
+            conversations: conversations,
+            show: true
         });
     });
 });
+
+
+app.post("/getConv", function(request, response) {
+    var id = request.body.session;
+    id = id.substring(4, id.indexOf("DA")-1);
+    
+    /**/
+    db.collection("users").findOne( {"username": request.session.username}, { "conversations": 1 }, function (err, document) {
+        var dialogues = [];
+        var conversations = [];
+        document.conversations.forEach(function (conversation) {
+            //Append to dialogue specific to conversation
+            
+            if (conversation.id == id) {
+                console.log("matched")
+                conversation.dialogues.forEach(function (dialogue) {
+                    dialogues.push({
+                        "timestamp": dialogue.timestamp,
+                        "name": dialogue.name,
+                        "text": dialogue.text
+                    });
+                });
+            }
+            //Append to conversations in dropdown menu
+            conversations.push({
+                "id": conversation.id,
+                "start_date": conversation.start_date, 
+                "dialogues": conversation.dialogues
+            });
+        });
+
+        response.render(path.join(__dirname + "/doctor.ejs"), {
+            name: request.session.name, 
+            date: getDateTime(DATETIME),
+            dialogues: dialogues,
+            conversations: conversations,
+            show: false, 
+            id: id
+        });
+    });
+    /**/
+});
+
 
 function getReply(userDialogue) {
     var responses = [
