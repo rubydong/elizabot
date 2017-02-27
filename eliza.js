@@ -198,7 +198,7 @@ app.get("/listconv", function (request, response) {
 });
 
 
-app.post("/getConv", function(request, response) {
+app.post("/getconv", function(request, response) {
     var id = request.body.session;
     id = id.substring(4, id.indexOf("DA")-1);
     
