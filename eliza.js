@@ -100,7 +100,7 @@ app.get("/logout", function (request, response) {
     response.redirect("/eliza");
 });
 
-app.get("/register", function (request, response) {
+app.get("/adduser", function (request, response) {
     response.sendFile(path.join(__dirname + "/register.html")); 
 });
 
@@ -129,7 +129,7 @@ function sendEmail(email, key) {
     });
 }
 
-app.post("/registerVerify", function (request, response) {
+app.post("/verify", function (request, response) {
     var email = request.body.email;
     key = (Math.random() + 1).toString(36).substring(7);
     if (email) {
@@ -210,7 +210,6 @@ app.post("/getConv", function(request, response) {
             //Append to dialogue specific to conversation
             
             if (conversation.id == id) {
-                console.log("matched")
                 conversation.dialogues.forEach(function (dialogue) {
                     dialogues.push({
                         "timestamp": dialogue.timestamp,
